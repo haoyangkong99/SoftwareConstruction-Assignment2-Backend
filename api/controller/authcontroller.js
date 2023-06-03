@@ -7,25 +7,24 @@ const {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail
  } = require("firebase/auth");
-const firebaseConfig = require("../credentials.json");
 const apiKey = "AIzaSyB2fLOHdom13E12VcaKM4aOBOZmer4npKI";
 firebase.initializeApp({
   apiKey: apiKey,
 });
 const auth = getAuth();
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   var email = req.body.email;
   var password = req.body.password;
-
-    createUserWithEmailAndPassword(auth,email, password)
-    .then((userCredential) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       var userRecord = userCredential.user;
       res.status(200).json({
         uid: userRecord.uid,
       });
-    })
-    .catch((error) => {
+    }
+
+    catch(error)  {
       if (error.code === 'auth/weak-password') {
         res.status(403).json({
           code: 'ERROR_SIGN_UP_EMAIL_PASSWORD',
@@ -42,42 +41,41 @@ router.post('/register', (req, res) => {
           message: 'Error occurred',
         });
       }
-    });
+    };
 });
 
 router.post('/login-email', async (req, res) => {
   var email = req.body.email;
   var password = req.body.password;
-  signInWithEmailAndPassword(auth,email, password)
-    .then((userCredential) => {
 
-      var userRecord = userCredential.user;
-      res.status(200).json({
-        uid: userRecord.uid,
-      });
-    })
-    .catch((error) => {
-      if (error.code === 'auth/user-not-found') {
-        res.status(403).json({
-          code: 'ERROR_SIGN_IN_EMAIL_PASSWORD',
-          message: 'No user found for that email.',
-        });
-      } else if (error.code === 'auth/wrong-password') {
-        res.status(403).json({
-          code: 'ERROR_SIGN_IN_EMAIL_PASSWORD',
-          message: 'Wrong password',
-        });
-      } else {
-        res.status(400).json({
-          code: 'ERROR_SIGN_IN_EMAIL_PASSWORD',
-          message: error.message,
-        });
-      }
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    var userRecord = userCredential.user;
+    res.status(200).json({
+      uid: userRecord.uid,
     });
+  } catch (error) {
+    if (error.code === 'auth/user-not-found') {
+      res.status(403).json({
+        code: 'ERROR_SIGN_IN_EMAIL_PASSWORD',
+        message: 'No user found for that email.',
+      });
+    } else if (error.code === 'auth/wrong-password') {
+      res.status(403).json({
+        code: 'ERROR_SIGN_IN_EMAIL_PASSWORD',
+        message: 'Wrong password',
+      });
+    } else {
+      res.status(400).json({
+        code: 'ERROR_SIGN_IN_EMAIL_PASSWORD',
+        message: error.message,
+      });
+    }
+  }
 });
 
 router.post('/reset', async (req, res) => {
-  var email = req.body.email.trim();
+  var email = req.body.email;
 
   try {
     await sendPasswordResetEmail(auth,email);
@@ -91,5 +89,7 @@ router.post('/reset', async (req, res) => {
     });
   }
 });
+
+
 
 module.exports = router;
