@@ -17,7 +17,8 @@ router.post('/add', async (req, res) => {
             if (userDoc.exists)
             {
                 res.status(400).json({
-                    code:"DOCUMENT EXIST",
+                    code:"USER_RECORD_EXIST",
+                    message:"This user cannot be created"
 
                 })
             }
@@ -29,7 +30,7 @@ router.post('/add', async (req, res) => {
             })
             }
           } catch (error) {
-              res.status(404).send({ code:error.code, error: error.message })
+              res.status(404).send({ code:error.code, message: error.message })
           }
   });
   router.put('/update-by-guid', async (req, res) => {
@@ -41,7 +42,8 @@ router.post('/add', async (req, res) => {
         if (result.empty)
         {
             res.status(400).json({
-                code:"DOCUMENT DOES NOT EXIST",
+                code:"USER_RECORD_DOES_NOT_EXIST",
+                message:"No update is allowed"
 
             })
         }
@@ -54,7 +56,7 @@ router.post('/add', async (req, res) => {
         })
         }
       } catch (error) {
-          res.status(404).send({  error: error.message })
+          res.status(404).send({ code:error.code, message: error.message })
       }
 });
 router.put('/update-by-docId', async (req, res) => {
@@ -67,7 +69,7 @@ router.put('/update-by-docId', async (req, res) => {
           success:true
         })
       } catch (error) {
-          res.status(404).send({  error: error.message })
+          res.status(404).send({  code:error.code, message: error.message })
       }
 });
 router.get('/get-all', async (req, res) => {
@@ -82,7 +84,7 @@ router.get('/get-all', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({
-            error: error.message
+            code:error.code, message: error.message
         });
     }
 });
@@ -93,7 +95,8 @@ router.get('/get-by-docId/:id', async (req, res) => {
         const result = await admin.firestore().collection('user').doc(id).get();
         if (!result.exists) {
             res.status(404).json({
-                error: 'User not found'
+                code:'USER_NOT_FOUND',
+                message: 'This document id cannot be found'
             });
         } else {
             const user = result.data();
@@ -103,7 +106,7 @@ router.get('/get-by-docId/:id', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({
-            error: error.message
+            code:error.code, message: error.message
         });
     }
 });
@@ -115,7 +118,9 @@ router.get('/get-by-guid/:guid', async (req, res) => {
         const result =await admin.firestore().collection('user').where('guid',"==",guid).get();
         if (result.empty) {
             res.status(404).json({
-                error: 'User not found'
+
+                code:'USER_NOT_FOUND',
+                message: 'The user guid cannot be found'
             });
         } else {
             const user = result.docs[0].data();
@@ -125,7 +130,7 @@ router.get('/get-by-guid/:guid', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({
-            error: error.message
+            code:error.code, message: error.message
         });
     }
 });
