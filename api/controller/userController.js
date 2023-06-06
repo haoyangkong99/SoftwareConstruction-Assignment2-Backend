@@ -10,8 +10,6 @@ admin.initializeApp({
 router.post('/add', async (req, res) => {
         const uid=req.body.uid;
         const user=req.body.user;
-        console.log(uid);
-        console.log(user);
         try {
             const userDoc = await admin.firestore().collection('user').doc(uid).get();
             if (userDoc.exists)
